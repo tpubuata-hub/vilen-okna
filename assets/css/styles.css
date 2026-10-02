@@ -885,8 +885,8 @@ textarea.input { resize: vertical; min-height: 96px; }
 .motion .hero__cta,
 .motion .hero__stage,
 .motion .temp,
-.motion .hero__hint { display: inline-flex; }
 .motion .hero__hint > * { opacity: 0; }
+.motion .hero__hint { display: inline-flex; }
 .motion .hero__title .line > span { transform: translateY(105%); }
 
 .gallery { overflow-x: auto; scrollbar-width: none; }
