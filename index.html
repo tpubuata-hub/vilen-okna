@@ -9,14 +9,14 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Вилен Окна — пластиковые окна и балконы в Новосибирске">
   <meta property="og:description" content="Производство, доставка и монтаж. Замер бесплатно.">
-  <meta property="og:image" content="https://tpubuata-hub.github.io/vilen-okna/assets/img/room-balcony-door.webp">
+  <meta property="og:image" content="https://tpubuata-hub.github.io/vilen-okna/assets/img/hero-interior-1280.webp">
   <meta property="og:url" content="https://tpubuata-hub.github.io/vilen-okna/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="assets/img/view-winter.webp">
-  <link rel="stylesheet" href="assets/css/styles.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/img/hero-interior-1280.webp" imagesrcset="assets/img/hero-interior-1280.webp 1280w, assets/img/hero-interior-2400.webp 2400w" imagesizes="(min-width: 1024px) 60vw, 100vw">
+  <link rel="stylesheet" href="assets/css/styles.css?v=4">
   <script>
     (function () {
       var d = document.documentElement;
@@ -49,43 +49,42 @@
   <a class="skip" href="#main">Перейти к содержимому</a>
 
   <!-- ============ Навигация ============ -->
-  <header class="nav" id="nav">
-    <div class="nav__inner">
-      <a class="logo" href="#top" aria-label="Вилен Окна, на главную">
-        <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="2.5" y="2.5" width="35" height="35" rx="7" fill="none" stroke="currentColor" stroke-width="3"/>
-          <path d="M20 3v34" stroke="currentColor" stroke-width="3"/>
-          <g class="logo__sash"><path d="M21.5 6.5 34 4.5v31l-12.5-2z" fill="currentColor" opacity=".16"/><path d="M25 18v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></g>
+  <header class="site-header" id="nav">
+    <div class="site-header__inner">
+      <a class="brand" href="#top" aria-label="Вилен Окна, на главную">
+        <svg class="brand__mark" viewBox="0 0 48 52" aria-hidden="true">
+          <defs><linearGradient id="vo-mark-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38A5F6"/><stop offset="1" stop-color="#1279DA"/></linearGradient></defs>
+          <path fill="url(#vo-mark-1)" fill-rule="evenodd" d="M3 10.6 45 2.6 42.6 46.2 3 50.2Z M9.6 15.8 38.9 10.5 37.1 40.7 9.6 43.5Z"/>
+          <path fill="#0F68C2" opacity=".5" d="M9.6 15.8 38.9 10.5 38.75 13 11.8 17.8 11.8 43.3 9.6 43.5Z"/>
+          <path d="M24.4 13.4 23.3 42" stroke="#1E8BEA" stroke-width="3.6" stroke-linecap="round"/>
+          <path d="M20.8 27.8h5.4" stroke="#0F68C2" stroke-width="2.6" stroke-linecap="round"/>
         </svg>
-        <span class="logo__text">
-          <span class="logo__name">Вилен Окна</span>
-          <span class="logo__sub">Пластиковые окна и балконы</span>
+        <span class="brand__text">
+          <span class="brand__name">Вилен Окна</span>
+          <span class="brand__sub">Пластиковые окна и балконы</span>
         </span>
       </a>
 
-      <nav class="nav__links" aria-label="Разделы">
+      <nav class="site-nav" aria-label="Основная навигация">
         <a href="#okna">Окна</a>
         <a href="#balkony">Балконы</a>
-        <a href="#raschet">Расчёт</a>
         <a href="#raboty">Наши работы</a>
         <a href="#otzyvy">Отзывы</a>
         <a href="#kontakty">Контакты</a>
       </nav>
 
-      <div class="nav__contact">
-        <svg class="icon nav__phone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.2-2 1.4a12 12 0 0 0 6.3 6.3l1.4-2 4.2 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg>
-        <div class="nav__phones">
-          <a href="tel:+79529012057">+7-952-901-20-57</a>
-          <a href="tel:+79138926820">+7-913-892-68-20</a>
+      <div class="header-phones">
+        <svg class="icon header-phones__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.2-2 1.4a12 12 0 0 0 6.3 6.3l1.4-2 4.2 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg>
+        <div class="header-phones__list">
+          <a href="tel:+79529012057">+7 952 901-20-57</a>
+          <a href="tel:+79138926820">+7 913 892-68-20</a>
         </div>
-        <a class="btn btn--primary btn--sm" href="#kontakty">Вызвать замерщика</a>
       </div>
 
-      <a class="nav__call" href="tel:+79529012057" aria-label="Позвонить">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.2-2 1.4a12 12 0 0 0 6.3 6.3l1.4-2 4.2 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg>
-      </a>
-      <button class="nav__burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu">
-        <span></span><span></span>
+      <a class="btn btn--primary header-cta" href="#kontakty" data-focus="#lead-name">Вызвать замерщика</a>
+
+      <button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
       </button>
     </div>
   </header>
@@ -94,134 +93,66 @@
     <nav class="menu__links" aria-label="Меню">
       <a href="#okna">Окна</a>
       <a href="#balkony">Балконы</a>
-      <a href="#raschet">Расчёт стоимости</a>
       <a href="#raboty">Наши работы</a>
       <a href="#otzyvy">Отзывы</a>
       <a href="#kontakty">Контакты</a>
     </nav>
     <div class="menu__foot">
-      <a class="menu__phone" href="tel:+79529012057">+7-952-901-20-57</a>
-      <a class="menu__phone" href="tel:+79138926820">+7-913-892-68-20</a>
-      <a class="btn btn--primary" href="#kontakty">Вызвать замерщика</a>
+      <a class="menu__phone" href="tel:+79529012057">+7 952 901-20-57</a>
+      <a class="menu__phone" href="tel:+79138926820">+7 913 892-68-20</a>
+      <a class="btn btn--primary btn--hero" href="#kontakty" data-focus="#lead-name">Вызвать замерщика</a>
     </div>
   </div>
 
   <main id="main">
-    <!-- ============ Первый экран: окно, которое открывается при прокрутке ============ -->
-    <section class="hero" id="top" aria-label="Пластиковые окна и балконы в Новосибирске">
-      <div class="hero__glow" aria-hidden="true"></div>
-      <div class="hero__inner">
-        <div class="hero__copy">
-          <div class="hero__intro">
-            <a class="rating-badge" href="https://2gis.ru/novosibirsk/firm/70000001069487037/tab/reviews" target="_blank" rel="noopener">
-              <span class="rating-badge__star" aria-hidden="true">★</span>
-              <span><b>4,8</b> в 2ГИС · 40 отзывов</span>
+    <!-- ============ Первый экран ============ -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__main">
+        <div class="hero__media">
+          <img src="assets/img/hero-interior-1280.webp"
+            srcset="assets/img/hero-interior-1280.webp 1280w, assets/img/hero-interior-2400.webp 2400w"
+            sizes="(min-width: 1024px) 60vw, 100vw"
+            width="2400" height="1600" fetchpriority="high" decoding="async"
+            alt="Светлая гостиная с панорамными пластиковыми окнами и застеклённым балконом">
+        </div>
+
+        <div class="hero__content">
+          <p class="hero__label">Новосибирск</p>
+          <h1 class="hero__title" id="hero-title">Пластиковые окна и&nbsp;балконы в&nbsp;Новосибирске</h1>
+          <p class="hero__sub"><span>Производство, доставка и монтаж.</span> <span>Замер бесплатно.</span></p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--hero hero__primary" href="#raschet">Рассчитать стоимость окна
+              <svg class="icon icon--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <h1 class="hero__title">
-              <span class="line"><span>Пластиковые окна</span></span>
-              <span class="line"><span>и балконы</span></span>
-              <span class="line"><span>в Новосибирске</span></span>
-            </h1>
-            <p class="hero__sub">Производство, доставка и монтаж.<br>Замер бесплатно.</p>
-            <div class="hero__cta">
-              <a class="btn btn--primary btn--lg" href="#raschet">Рассчитать стоимость
-                <svg class="icon icon--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-              </a>
-              <a class="btn btn--ghost btn--lg" href="#raboty">Смотреть работы</a>
-            </div>
+            <a class="btn btn--outline btn--hero hero__secondary" href="#raboty">Смотреть работы</a>
           </div>
-
-          <div class="story" aria-label="Как устроено окно">
-            <article class="story__step" data-step="0">
-              <p class="story__eyebrow"><span class="knob" data-pos="up" aria-hidden="true"></span>Ручка вверх</p>
-              <h2 class="story__title">Проветривание без сквозняка</h2>
-              <p class="story__text">Створка откидывается сверху на пару сантиметров. Свежий воздух идёт под потолок, а не по ногам.</p>
-            </article>
-            <article class="story__step" data-step="1">
-              <p class="story__eyebrow"><span class="knob" data-pos="side" aria-hidden="true"></span>Ручка в сторону</p>
-              <h2 class="story__title">Открывается полностью</h2>
-              <p class="story__text">Створка распахивается внутрь комнаты. Так удобно мыть стекло снаружи, даже на высоком этаже.</p>
-            </article>
-            <article class="story__step" data-step="2">
-              <p class="story__eyebrow"><span class="knob" data-pos="down" aria-hidden="true"></span>Внутри стеклопакета</p>
-              <h2 class="story__title">Три стекла и две камеры</h2>
-              <p class="story__text">Воздух между стёклами плохо пропускает холод. Двухкамерный стеклопакет держит тепло и приглушает шум с улицы.</p>
-            </article>
-            <article class="story__step" data-step="3">
-              <p class="story__eyebrow"><span class="knob" data-pos="down" aria-hidden="true"></span>Для Сибири</p>
-              <h2 class="story__title">Зимой тепло у самого окна</h2>
-              <p class="story__text">Подбираем профиль и стеклопакет под новосибирские морозы и аккуратно заделываем швы при монтаже.</p>
-            </article>
-            <div class="story__progress" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          </div>
-        </div>
-
-        <div class="hero__stage">
-          <div class="win" id="win" role="img" aria-label="Пластиковое окно с видом на заснеженный город">
-            <div class="win__view">
-              <canvas class="win__snow" aria-hidden="true"></canvas>
-            </div>
-            <div class="win__frame"></div>
-            <div class="win__mullion"></div>
-
-            <div class="sash sash--left">
-              <div class="sash__body">
-                <div class="glass">
-                  <div class="pane pane--back"></div>
-                  <div class="spacer spacer--back"></div>
-                  <div class="pane pane--mid"></div>
-                  <div class="spacer spacer--front"></div>
-                  <div class="pane pane--front"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="sash sash--right">
-              <div class="sash__tilt">
-                <div class="sash__body">
-                  <div class="glass">
-                    <div class="pane pane--back"><span class="pane__tag">Стекло</span></div>
-                    <div class="spacer spacer--back"><span class="pane__tag pane__tag--muted">Камера</span></div>
-                    <div class="pane pane--mid"><span class="pane__tag">Стекло</span></div>
-                    <div class="spacer spacer--front"><span class="pane__tag pane__tag--muted">Камера</span></div>
-                    <div class="pane pane--front"><span class="pane__tag">Стекло</span></div>
-                  </div>
-                </div>
-                <div class="handle" aria-hidden="true"><i class="handle__base"></i><i class="handle__lever"></i></div>
-              </div>
-            </div>
-
-            <div class="temp temp--out" aria-hidden="true"><span>За окном</span><b class="temp__value" data-temp-out>−18°</b></div>
-          </div>
-          <div class="temp temp--in" aria-hidden="true"><span>Дома</span><b class="temp__value">+23°</b></div>
-          <div class="win__floor" aria-hidden="true"></div>
         </div>
       </div>
 
-      <div class="hero__hint" aria-hidden="true">
-        <span>Листайте, чтобы открыть окно</span>
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-      </div>
-    </section>
-
-    <!-- ============ Факты ============ -->
-    <section class="facts" aria-label="Почему нам доверяют">
-      <ul class="facts__list">
-        <li class="fact">
-          <span class="fact__value"><span data-count="4.8" data-decimals="1">4,8</span><span class="fact__star" aria-hidden="true">★</span></span>
-          <span class="fact__label">рейтинг в 2ГИС,<br>40 отзывов</span>
+      <ul class="benefits" aria-label="Преимущества">
+        <li class="benefit">
+          <span class="benefit__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4A8 8 0 1 1 20 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>
+          </span>
+          <span class="benefit__text"><b>40 отзывов</b><span>в 2ГИС</span></span>
         </li>
-        <li class="fact">
-          <span class="fact__value">Бесплатно</span>
-          <span class="fact__label">замер<br>при заказе</span>
+        <li class="benefit">
+          <span class="benefit__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3.5 15.5 15.5 3.5l5 5-12 12z"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2"/></svg>
+          </span>
+          <span class="benefit__text"><b>Бесплатный замер</b><span>при заказе</span></span>
         </li>
-        <li class="fact">
-          <span class="fact__value">Гарантия</span>
-          <span class="fact__label">на монтаж</span>
+        <li class="benefit">
+          <span class="benefit__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.3 2.9 8 7 9.5 4.1-1.5 7-5.2 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>
+          </span>
+          <span class="benefit__text"><b>Гарантия</b><span>на монтаж</span></span>
         </li>
-        <li class="fact">
-          <span class="fact__value">Тёплые</span>
-          <span class="fact__label">профили<br>для Сибири</span>
+        <li class="benefit">
+          <span class="benefit__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.5v19M3.8 7.2l16.4 9.6M3.8 16.8l16.4-9.6"/><path d="m9.5 3.8 2.5 2 2.5-2M9.5 20.2l2.5-2 2.5 2M4.3 10.4l3-.6-.9-3M19.7 13.6l-3 .6.9 3M4.3 13.6l3 .6-.9 3M19.7 10.4l-3-.6.9-3"/></svg>
+          </span>
+          <span class="benefit__text"><b>Тёплые профили</b><span>для Сибири</span></span>
         </li>
       </ul>
     </section>
@@ -232,7 +163,7 @@
         <header class="section__head">
           <p class="eyebrow">Окна</p>
           <h2 class="section__title reveal-lines">Окна для квартиры, дома и дачи.</h2>
-          <p class="section__lead reveal">Делаем окна по вашим размерам на своём производстве, привозим и сами устанавливаем.</p>
+          <p class="section__lead reveal">Подберём окна под ваш проём, привезём и сами установим.</p>
         </header>
 
         <div class="bento">
@@ -455,7 +386,7 @@
           <li class="step">
             <span class="step__num">3</span>
             <h3>Производство</h3>
-            <p>Изготавливаем окна точно по вашим размерам.</p>
+            <p>Окна изготавливают точно по вашим размерам.</p>
           </li>
           <li class="step">
             <span class="step__num">4</span>
@@ -586,8 +517,8 @@
 
           <div class="tile contact__info reveal">
             <div class="contact__phones">
-              <a href="tel:+79529012057">+7-952-901-20-57</a>
-              <a href="tel:+79138926820">+7-913-892-68-20</a>
+              <a href="tel:+79529012057">+7 952 901-20-57</a>
+              <a href="tel:+79138926820">+7 913 892-68-20</a>
             </div>
             <div class="contact__messengers">
               <a class="btn btn--soft" href="https://wa.me/79529012057" target="_blank" rel="noopener">
@@ -631,15 +562,17 @@
   <footer class="footer">
     <div class="container footer__inner">
       <div class="footer__brand">
-        <a class="logo" href="#top" aria-label="Вилен Окна, наверх">
-          <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true">
-            <rect x="2.5" y="2.5" width="35" height="35" rx="7" fill="none" stroke="currentColor" stroke-width="3"/>
-            <path d="M20 3v34" stroke="currentColor" stroke-width="3"/>
-            <g class="logo__sash"><path d="M21.5 6.5 34 4.5v31l-12.5-2z" fill="currentColor" opacity=".16"/><path d="M25 18v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></g>
-          </svg>
-          <span class="logo__text">
-            <span class="logo__name">Вилен Окна</span>
-            <span class="logo__sub">Пластиковые окна и балконы</span>
+        <a class="brand" href="#top" aria-label="Вилен Окна, наверх">
+          <svg class="brand__mark" viewBox="0 0 48 52" aria-hidden="true">
+          <defs><linearGradient id="vo-mark-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38A5F6"/><stop offset="1" stop-color="#1279DA"/></linearGradient></defs>
+          <path fill="url(#vo-mark-2)" fill-rule="evenodd" d="M3 10.6 45 2.6 42.6 46.2 3 50.2Z M9.6 15.8 38.9 10.5 37.1 40.7 9.6 43.5Z"/>
+          <path fill="#0F68C2" opacity=".5" d="M9.6 15.8 38.9 10.5 38.75 13 11.8 17.8 11.8 43.3 9.6 43.5Z"/>
+          <path d="M24.4 13.4 23.3 42" stroke="#1E8BEA" stroke-width="3.6" stroke-linecap="round"/>
+          <path d="M20.8 27.8h5.4" stroke="#0F68C2" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+          <span class="brand__text">
+            <span class="brand__name">Вилен Окна</span>
+            <span class="brand__sub">Пластиковые окна и балконы</span>
           </span>
         </a>
         <p class="muted">Торгово-монтажная компания. Новосибирск, ул. Красина, 56, 9 этаж.</p>
@@ -653,8 +586,8 @@
         <a href="#kontakty">Контакты</a>
       </nav>
       <div class="footer__contact">
-        <a href="tel:+79529012057">+7-952-901-20-57</a>
-        <a href="tel:+79138926820">+7-913-892-68-20</a>
+        <a href="tel:+79529012057">+7 952 901-20-57</a>
+        <a href="tel:+79138926820">+7 913 892-68-20</a>
         <span class="muted">Пн–Сб, 9:00–18:00</span>
       </div>
     </div>
@@ -669,14 +602,14 @@
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.2-2 1.4a12 12 0 0 0 6.3 6.3l1.4-2 4.2 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg>
       Позвонить
     </a>
-    <a class="btn btn--primary" href="#kontakty">Вызвать замерщика</a>
+    <a class="btn btn--primary" href="#kontakty" data-focus="#lead-name">Вызвать замерщика</a>
   </div>
 
   <script src="assets/vendor/gsap.min.js" defer></script>
   <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
   <script src="assets/vendor/lenis.min.js" defer></script>
-  <script src="assets/js/config.js?v=3" defer></script>
-  <script src="assets/js/calculator.js?v=3" defer></script>
-  <script src="assets/js/main.js?v=3" defer></script>
+  <script src="assets/js/config.js?v=4" defer></script>
+  <script src="assets/js/calculator.js?v=4" defer></script>
+  <script src="assets/js/main.js?v=4" defer></script>
 </body>
 </html>

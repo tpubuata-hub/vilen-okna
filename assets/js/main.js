@@ -96,14 +96,20 @@
   }
 
   /* ======================================================================
-     Навигация, меню
+     Шапка, меню, якоря
      ====================================================================== */
-  const nav = q('#nav');
-  const burger = q('.nav__burger');
+  const header = q('#nav');
+  const burger = q('.burger');
   const menu = q('#menu');
+  const hero = q('.hero');
+  const dock = q('#dock');
   let lenis = null;
 
-  const onScroll = () => nav.classList.toggle('is-scrolled', window.scrollY > 8);
+  const onScroll = () => {
+    const y = window.scrollY;
+    header.classList.toggle('is-compact', y > 24);
+    if (dock) dock.classList.toggle('is-visible', y > hero.offsetHeight - window.innerHeight * 0.35);
+  };
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -115,9 +121,10 @@
       document.body.style.overflow = 'hidden';
       if (lenis) lenis.stop();
       if (motion) {
-        gsap.fromTo(menu, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-        gsap.fromTo(qa('.menu__links a, .menu__foot > *', menu), { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.04, ease: 'expo.out' });
+        gsap.fromTo(qa('.menu__links a, .menu__foot > *', menu), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.035, ease: 'power3.out' });
       }
+      const first = q('.menu__links a', menu);
+      if (first) first.focus({ preventScroll: true });
     } else {
       menu.hidden = true;
       document.body.style.overflow = '';
@@ -128,8 +135,11 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !menu.hidden) { setMenu(false); burger.focus(); }
   });
+  window.addEventListener('resize', () => {
+    if (!menu.hidden && getComputedStyle(burger).display === 'none') setMenu(false);
+  });
 
-  // якорные ссылки
+  // якорные ссылки: плавная прокрутка с учётом шапки, при необходимости фокус в поле формы
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="#"]');
     if (!a) return;
@@ -138,71 +148,35 @@
     if (!target) return;
     e.preventDefault();
     if (!menu.hidden) setMenu(false);
+    const focusEl = a.dataset.focus ? q(a.dataset.focus) : null;
+    const done = () => { if (focusEl) focusEl.focus({ preventScroll: true }); };
+    const offset = id === '#top' ? 0 : -parseFloat(getComputedStyle(docEl).getPropertyValue('--header-h-compact')) + 1;
     if (lenis) {
-      lenis.scrollTo(id === '#top' ? 0 : target, { offset: id === '#top' ? 0 : -nav.offsetHeight + 1, duration: 1.4 });
+      // Lenis сам учитывает scroll-padding-top у html, отдельный отступ не нужен
+      lenis.scrollTo(id === '#top' ? 0 : target, { duration: 1.2, onComplete: done });
     } else {
-      const y = id === '#top' ? 0 : target.getBoundingClientRect().top + window.scrollY - nav.offsetHeight + 1;
+      const y = id === '#top' ? 0 : target.getBoundingClientRect().top + window.scrollY + offset;
       window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+      setTimeout(done, reduce ? 0 : 700);
     }
     if (id !== '#top') history.replaceState(null, '', id);
   });
 
-  /* ======================================================================
-     Снег за окном
-     ====================================================================== */
-  const snowState = { intensity: 0 };
-  (function snow() {
-    const canvas = q('.win__snow');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const N = 160;
-    let w = 0, h = 0, flakes = [], running = false, raf = 0, t = 0;
-
-    function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      flakes = Array.from({ length: N }, () => ({
-        x: Math.random() * w, y: Math.random() * h,
-        r: 0.5 + Math.random() * Math.random() * 2.4,
-        s: 0.35 + Math.random() * 0.7,
-        ph: Math.random() * Math.PI * 2,
-        a: 0.55 + Math.random() * 0.45,
-      }));
-    }
-
-    function frame() {
-      t += 0.016;
-      const k = snowState.intensity;
-      const active = Math.round(N * (0.4 + 0.6 * k));
-      const speed = 0.55 + k * 0.9;
-      const wind = 0.15 + k * 0.9;
-      ctx.clearRect(0, 0, w, h);
-      for (let i = 0; i < active; i++) {
-        const f = flakes[i];
-        f.y += f.s * speed * (0.6 + f.r * 0.5);
-        f.x += Math.sin(t * 1.3 + f.ph) * 0.25 + wind * f.r * 0.35;
-        if (f.y > h + 4) { f.y = -4; f.x = Math.random() * w; }
-        if (f.x > w + 4) f.x = -4;
-        ctx.globalAlpha = f.a;
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      if (running) raf = requestAnimationFrame(frame);
-    }
-
-    resize();
-    window.addEventListener('resize', resize);
-    if (reduce) { frame(); return; }
-    new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !running) { running = true; raf = requestAnimationFrame(frame); }
-      else if (!entry.isIntersecting) { running = false; cancelAnimationFrame(raf); }
-    }).observe(canvas);
-  })();
+  // активный пункт меню
+  const navLinks = qa('.site-nav a');
+  const sections = navLinks.map((a) => q(a.getAttribute('href'))).filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        navLinks.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === '#' + en.target.id));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    sections.forEach((s) => io.observe(s));
+    new IntersectionObserver(([en]) => {
+      if (en.isIntersecting) navLinks.forEach((a) => a.classList.remove('is-active'));
+    }, { threshold: 0.4 }).observe(hero);
+  }
 
   /* ======================================================================
      Балконы: переключатель вариантов
@@ -267,117 +241,10 @@
      ====================================================================== */
   ScrollTrigger.config({ ignoreMobileResize: true });
 
-  lenis = new Lenis({ duration: 1.15, easing: (x) => Math.min(1, 1.001 - Math.pow(2, -10 * x)) });
+  lenis = new Lenis({ duration: 1.1, easing: (x) => Math.min(1, 1.001 - Math.pow(2, -10 * x)) });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
-
-  /* ---------- первое появление ---------- */
-  const ready = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise((r) => setTimeout(r, 700))]);
-  ready.then(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    tl.to('.nav', { opacity: 1, duration: 0.9 }, 0)
-      .fromTo('.rating-badge', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1 }, 0.1)
-      .to('.hero__title .line > span', { y: 0, duration: 1.3, stagger: 0.09 }, 0.15)
-      .fromTo('.hero__sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1.1 }, 0.45)
-      .fromTo('.hero__cta', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1.1 }, 0.55)
-      .fromTo('.hero__stage', { opacity: 0, y: 70, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 1.8 }, 0.2)
-      .fromTo('.temp', { opacity: 0, scale: 0.85, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 1, stagger: 0.15, ease: 'back.out(1.6)' }, 1.1)
-      .to('.hero__hint > *', { opacity: 1, duration: 1 }, 1.4);
-  });
-
-  /* ---------- окно при прокрутке ---------- */
-  const win = q('#win');
-  const right = q('.sash--right');
-  const tilt = q('.sash__tilt', right);
-  const lever = q('.handle__lever');
-  const steps = qa('.story__step');
-  const bars = qa('.story__progress i');
-  const layers = qa('.glass > *', right);
-  const tempOut = q('[data-temp-out]');
-  const tempState = { v: -18 };
-  const setTemp = () => { tempOut.textContent = `−${Math.abs(Math.round(tempState.v))}°`; };
-
-  gsap.set(steps, { autoAlpha: 0, y: 30 });
-  gsap.set('.story__progress', { autoAlpha: 0 });
-  gsap.set(bars, { '--p': 0 });
-  layers.forEach((l, i) => gsap.set(l, { z: i * 0.4 }));
-
-  const mm = gsap.matchMedia();
-  mm.add({ desktop: '(min-width: 1024px)', mobile: '(max-width: 1023px)' }, (ctx) => {
-    const { desktop } = ctx.conditions;
-    const layerZ = (i) => () => i * win.offsetWidth * (desktop ? 0.075 : 0.07);
-
-    const tl = gsap.timeline({
-      defaults: { ease: 'power2.inOut' },
-      scrollTrigger: {
-        trigger: '.hero',
-        start: 'top top',
-        end: desktop ? '+=340%' : '+=280%',
-        pin: true,
-        scrub: 0.9,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-      },
-    });
-
-    // проветривание
-    tl.to('.hero__intro', { autoAlpha: 0, y: -40, duration: 0.6 }, 0)
-      .to('.hero__hint', { autoAlpha: 0, duration: 0.3 }, 0)
-      .to(steps[0], { autoAlpha: 1, y: 0, duration: 0.5 }, 0.45)
-      .to('.story__progress', { autoAlpha: 1, duration: 0.4 }, 0.45)
-      .to(bars[0], { '--p': 1, duration: 1.7, ease: 'none' }, 0.45)
-      .to(lever, { rotation: -180, duration: 0.5 }, 0.5)
-      .to(tilt, { rotationX: -17, duration: 0.8 }, 1.05)
-    // поворот
-      .to(tilt, { rotationX: 0, duration: 0.6 }, 2.1)
-      .to(steps[0], { autoAlpha: 0, y: -30, duration: 0.4 }, 2.2)
-      .to(steps[1], { autoAlpha: 1, y: 0, duration: 0.5 }, 2.55)
-      .to(bars[1], { '--p': 1, duration: 1.8, ease: 'none' }, 2.55)
-      .to(lever, { rotation: -90, duration: 0.4 }, 2.7)
-      .to(right, { rotationY: 44, duration: 1.0 }, 3.1)
-    // стеклопакет
-      .to(right, { rotationY: 0, duration: 0.8 }, 4.4)
-      .to(lever, { rotation: 0, duration: 0.4 }, 5.15)
-      .to(steps[1], { autoAlpha: 0, y: -30, duration: 0.4 }, 4.6)
-      .to(steps[2], { autoAlpha: 1, y: 0, duration: 0.5 }, 5.0)
-      .to(bars[2], { '--p': 1, duration: 2.0, ease: 'none' }, 5.0)
-      .to(win, { rotationY: -36, rotationX: 8, duration: 1.0 }, 5.4)
-      .to(win, { '--explode': 1, duration: 0.6 }, 5.9)
-      .to(layers, { z: (i) => layerZ(i)(), duration: 1.0, stagger: 0 }, 5.9)
-    // зима
-      .to(layers, { z: (i) => i * 0.4, duration: 0.8 }, 7.4)
-      .to(win, { '--explode': 0, duration: 0.5 }, 7.5)
-      .to(win, { rotationY: 0, rotationX: 0, duration: 0.9 }, 7.7)
-      .to(steps[2], { autoAlpha: 0, y: -30, duration: 0.4 }, 7.6)
-      .to(steps[3], { autoAlpha: 1, y: 0, duration: 0.5 }, 8.0)
-      .to(bars[3], { '--p': 1, duration: 1.5, ease: 'none' }, 8.0)
-      .to('.hero__glow', { opacity: 1, duration: 1.0 }, 8.0)
-      .to(snowState, { intensity: 1, duration: 1.0 }, 8.0)
-      .to(tempState, { v: -32, duration: 1.0, ease: 'power1.inOut', onUpdate: setTemp }, 8.0)
-      .to({}, { duration: 0.6 }, 9.5);
-
-    return () => { gsap.set([right, tilt, lever, win], { clearProps: 'transform' }); };
-  });
-
-  /* ---------- нижняя панель на телефоне ---------- */
-  const dock = q('#dock');
-  ScrollTrigger.create({
-    trigger: '.facts',
-    start: 'top 80%',
-    onEnter: () => dock.classList.add('is-visible'),
-    onLeaveBack: () => dock.classList.remove('is-visible'),
-  });
-
-  /* ---------- активный пункт меню ---------- */
-  qa('.nav__links a').forEach((a) => {
-    const sec = q(a.getAttribute('href'));
-    if (!sec) return;
-    ScrollTrigger.create({
-      trigger: sec, start: 'top 45%', end: 'bottom 45%',
-      onToggle: (self) => a.classList.toggle('is-active', self.isActive),
-    });
-  });
 
   /* ---------- заголовки по словам ---------- */
   qa('.reveal-lines').forEach((h) => {
@@ -385,7 +252,7 @@
     h.setAttribute('aria-label', h.textContent.trim());
     h.innerHTML = words.map((w) => `<span class="w" aria-hidden="true"><span>${w}</span></span>`).join(' ');
     gsap.from(qa('.w > span', h), {
-      yPercent: 110, duration: 1.2, stagger: 0.06, ease: 'expo.out',
+      yPercent: 110, duration: 1.1, stagger: 0.05, ease: 'expo.out',
       scrollTrigger: { trigger: h, start: 'top 86%', once: true },
     });
   });
@@ -394,7 +261,7 @@
   ScrollTrigger.batch('.reveal', {
     start: 'top 88%',
     once: true,
-    onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, duration: 1.2, stagger: 0.1, ease: 'expo.out', overwrite: true }),
+    onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, duration: 1.1, stagger: 0.1, ease: 'expo.out', overwrite: true }),
   });
 
   // параллакс фото в плитках
@@ -425,6 +292,7 @@
 
   // этапы: линия рисуется по мере прокрутки
   const stepEls = qa('.step');
+  const mm = gsap.matchMedia();
   mm.add({ desktop: '(min-width: 1024px)', mobile: '(max-width: 1023px)' }, (ctx) => {
     const { desktop } = ctx.conditions;
     gsap.fromTo('.steps__rail i', desktop ? { scaleX: 0 } : { scaleY: 0 }, {
