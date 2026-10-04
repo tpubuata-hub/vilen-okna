@@ -357,19 +357,19 @@ legend { padding: 0; }
 .profiles {
   margin-top: 20px; padding: clamp(24px, 3vw, 40px) clamp(24px, 3.4vw, 48px);
   border-radius: var(--radius-tile); background: var(--tile);
-  display: flex; align-items: center; justify-content: space-between; gap: 24px 48px; flex-wrap: wrap;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+  text-align: center;
 }
-.profiles__copy { max-width: 30rem; }
+.profiles__copy { max-width: 34rem; }
 .profiles__label { font-size: 15px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .profiles__text { margin-top: 8px; font-size: 17px; line-height: 1.45; color: var(--ink); }
-.profiles__list { display: flex; flex-wrap: wrap; }
+.profiles__list { display: flex; flex-wrap: wrap; justify-content: center; }
 .profiles__list li {
   padding: 6px clamp(18px, 2.4vw, 40px);
   font-size: clamp(24px, 2.4vw, 34px); font-weight: 800; letter-spacing: .02em; line-height: 1;
   color: var(--ink-strong);
 }
 .profiles__list li + li { border-left: 1px solid var(--line); }
-.profiles__list li:last-child { padding-right: 0; }
 
 /* ---------- Балконы ---------- */
 .balc { display: grid; grid-template-columns: minmax(280px, 4fr) 8fr; gap: 24px; align-items: stretch; }
@@ -863,8 +863,6 @@ textarea.input { resize: vertical; min-height: 96px; }
   .work--tall, .work--half, .work--third, .work--quarter { grid-column: auto; }
   /* на планшете карточки в две колонки квадратные, чтобы ряды были ровными */
   .work--tall .work__media, .work--half .work__media, .work--third .work__media, .work--quarter .work__media { flex: none; aspect-ratio: 1 / 1; min-height: 0; }
-  .profiles { flex-direction: column; align-items: flex-start; }
-  .profiles__list li:first-child { padding-left: 0; }
   .lightbox__figure { padding: 68px 16px 104px; }
   .lightbox__img { max-height: calc(100vh - 200px); max-height: calc(100dvh - 200px); }
   .lightbox__prev, .lightbox__next { top: auto; bottom: 28px; transform: none; }
@@ -924,8 +922,9 @@ textarea.input { resize: vertical; min-height: 96px; }
   .work--tall .work__media, .work--quarter .work__media { flex: none; aspect-ratio: 4 / 5; min-height: 0; }
   .work--half .work__media, .work--third .work__media { aspect-ratio: 4 / 3; }
   .seg-small.seg-small--4 { grid-template-columns: 1fr 1fr; }
-  .profiles__list { gap: 6px 16px; }
-  .profiles__list li, .profiles__list li:first-child { padding: 0; border: 0; font-size: 20px; }
+  .profiles__list { gap: 8px 24px; }
+  .profiles__list li { padding: 0; font-size: 20px; }
+  .profiles__list li + li { border-left: 0; }
   .work__pair { gap: 10px; }
   .work__pair .work__media { aspect-ratio: 3 / 4; border-radius: 20px; }
   .work__media { border-radius: 20px; }
