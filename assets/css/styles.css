@@ -733,18 +733,33 @@ textarea.input { resize: vertical; min-height: 96px; }
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: 50% 50%;
 }
-/* живая карта 2ГИС поверх заставки */
-.contact__map-live { position: absolute; inset: 0; opacity: 0; transition: opacity .6s var(--ease); }
-.contact__map.is-live .contact__map-live { opacity: 1; }
-.contact__map-live iframe { display: block; width: 100%; height: 100%; border: 0; filter: grayscale(1) contrast(1.02) brightness(1.05); }
-/* перекраска в синий сайта: оттенок даёт этот слой, яркость и детали остаются от карты */
-.contact__map-live::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: var(--blue); mix-blend-mode: color; opacity: .55;
+/* живая карта 2ГИС поверх заставки (Leaflet, тайлы 2ГИС) */
+.contact__map { isolation: isolate; }
+.contact__map-live {
+  position: absolute; inset: 0; z-index: 0;
+  opacity: 0; transition: opacity .6s var(--ease);
 }
-.contact__map.is-live .map-pin,
-.contact__map.is-live .map-label,
+.contact__map.is-live .contact__map-live { opacity: 1; }
+.contact__map .leaflet-container { width: 100%; height: 100%; background: #dfeaf6; font: inherit; }
+/* перекрашиваем только подложку карты в синий сайта, маркер остаётся ярким */
+.contact__map .map-tiles,
+.contact__map-img { filter: url(#map-duotone); }
+.map-filter { position: absolute; width: 0; height: 0; overflow: hidden; }
+.map-marker svg, .map-pin-static svg { display: block; width: 36px; height: 46px; filter: drop-shadow(0 6px 10px rgba(14, 118, 214, .35)); }
+.map-pin-static { position: absolute; left: 50%; top: 50%; z-index: 1; transform: translate(-18px, -45px); pointer-events: none; }
+.contact__map.is-live .map-pin-static,
 .contact__map.is-live .map-credit { visibility: hidden; }
+.contact__map .leaflet-control-zoom { margin: 16px 16px 0 0; border: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(20, 45, 67, .14); }
+.contact__map .leaflet-control-zoom a {
+  width: 40px; height: 40px; line-height: 40px; font-size: 20px; font-weight: 500;
+  color: var(--ink-strong); border-bottom-color: var(--line-soft);
+}
+.contact__map .leaflet-control-zoom a:hover { background: var(--blue-soft); color: var(--blue-btn); }
+.contact__map .leaflet-control-attribution {
+  padding: 2px 8px; border-radius: 8px 0 0 0;
+  background: rgba(255, 255, 255, .85); font-size: 11px; color: var(--ink-2);
+}
+.contact__map .leaflet-control-attribution a { color: var(--link); }
 .map-activate {
   position: absolute; inset: 0; z-index: 2;
   display: flex; align-items: flex-end; justify-content: center; padding: 0 0 18px;
@@ -764,23 +779,6 @@ textarea.input { resize: vertical; min-height: 96px; }
   padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, .85);
   font-size: 11px; color: var(--ink-2);
 }
-.map-pin {
-  position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px;
-  border-radius: 50%; background: var(--blue); border: 4px solid #fff;
-  box-shadow: 0 4px 14px rgba(22, 137, 232, .45); pointer-events: none;
-}
-.map-pin i {
-  position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--blue);
-  animation: pulse 2.4s var(--ease) infinite;
-}
-@keyframes pulse { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(3.2); opacity: 0; } }
-.map-label {
-  position: absolute; left: calc(50% + 22px); top: calc(50% - 26px);
-  padding: 10px 14px; border-radius: 14px; background: #fff; pointer-events: none;
-  font-size: 15px; font-weight: 600; line-height: 1.25;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, .12);
-}
-.map-label span { font-weight: 400; color: var(--ink-2); font-size: 13px; }
 
 /* ---------- Подвал ---------- */
 .footer { border-top: 1px solid var(--line-soft); padding-block: 48px 28px; font-size: 14px; }
@@ -876,7 +874,6 @@ textarea.input { resize: vertical; min-height: 96px; }
 .motion .work__media.is-in img { scale: 1; }
 
 /* пульс метки на карте только пока карта на экране */
-.contact__map:not(.is-running) .map-pin i { animation-play-state: paused; }
 
 /*
  * Привязка к прокрутке без JS: браузер ведёт эти анимации сам, в потоке
@@ -1001,7 +998,7 @@ textarea.input { resize: vertical; min-height: 96px; }
 }
 
 @media (max-width: 767px) {
-  .contact__map { height: 420px; }
+  .contact__map { height: 340px; }
   .header-phones { display: none; }
   .burger { margin-left: auto; }
   .brand { gap: 10px; }
@@ -1049,7 +1046,6 @@ textarea.input { resize: vertical; min-height: 96px; }
   .review p { font-size: 16px; }
   .section__head--row { display: block; }
   .section__head--row .section__lead { margin-top: 16px; }
-  .map-label { display: none; }
 }
 
 @media (max-width: 359px) {
@@ -1079,7 +1075,3 @@ textarea.input { resize: vertical; min-height: 96px; }
   }
 }
 
-/* у виджета 2ГИС карточка фиксированной ширины: на узком телефоне уменьшаем карту целиком, чтобы карточка влезала */
-@media (max-width: 480px) {
-  .contact__map-live iframe { width: calc(100% / .76); height: calc(100% / .76); transform: scale(.76); transform-origin: 0 0; }
-}

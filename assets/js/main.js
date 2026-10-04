@@ -330,46 +330,72 @@
   }
 
   /* ======================================================================
-     Карта 2ГИС. Виджет создаётся, только когда до контактов остаётся
-     немного прокрутки, поэтому не тормозит загрузку страницы; до этого на
-     его месте статичная карта. Двигать карту можно после нажатия, иначе она
+     Карта 2ГИС: тайлы 2ГИС через Leaflet и свой маркер, без всплывающей
+     карточки. Библиотека и тайлы грузятся, только когда до контактов остаётся
+     немного прокрутки, поэтому не тормозят загрузку; до этого на месте карты
+     статичная заставка. Двигать карту можно после нажатия, иначе она
      перехватывала бы прокрутку страницы колесом и пальцем.
      ====================================================================== */
   const mapBox = q('#map');
   if (mapBox && 'IntersectionObserver' in window) {
     const live = q('.contact__map-live', mapBox);
     const activate = q('.map-activate', mapBox);
-    const frameOf = () => q('iframe', live);
+    const point = [+mapBox.dataset.lat, +mapBox.dataset.lon];
+    const pinSvg = q('.map-pin-static', mapBox).innerHTML;
+    const handlers = ['dragging', 'touchZoom', 'doubleClickZoom', 'scrollWheelZoom'];
+    let map = null;
+
+    const loadAsset = (tag, attrs) => new Promise((resolve, reject) => {
+      const el = document.createElement(tag);
+      Object.assign(el, attrs);
+      el.onload = resolve;
+      el.onerror = reject;
+      document.head.appendChild(el);
+    });
+
     const setActive = (on) => {
       mapBox.classList.toggle('is-active', on);
-      const frame = frameOf();
-      if (frame) frame.tabIndex = on ? 0 : -1;
+      if (map) handlers.forEach((h) => map[h][on ? 'enable' : 'disable']());
     };
-    const load = () => {
-      const opts = {
-        pos: { lat: +mapBox.dataset.lat, lon: +mapBox.dataset.lon, zoom: 16 },
-        opt: { city: 'novosibirsk' },
-        org: mapBox.dataset.firm,
-      };
-      const frame = document.createElement('iframe');
-      frame.title = 'Карта 2ГИС: Вилен Окна, Новосибирск, улица Красина, 56';
-      frame.src = 'https://widgets.2gis.com/widget?type=firmsonmap&options=' + encodeURIComponent(JSON.stringify(opts));
-      frame.tabIndex = -1;
-      frame.addEventListener('load', () => { mapBox.classList.add('is-live'); activate.hidden = false; }, { once: true });
-      live.appendChild(frame);
+
+    const build = () => {
+      const L = window.L;
+      map = L.map(live, {
+        center: point, zoom: 16, minZoom: 11, maxZoom: 18,
+        zoomControl: false, attributionControl: false, boxZoom: false, keyboard: false,
+        dragging: false, touchZoom: false, doubleClickZoom: false, scrollWheelZoom: false,
+      });
+      L.control.zoom({ position: 'topright', zoomInTitle: 'Приблизить', zoomOutTitle: 'Отдалить' }).addTo(map);
+      L.control.attribution({ prefix: false })
+        .addAttribution('© <a href="https://law.2gis.ru/api-rules/" target="_blank" rel="noopener">2ГИС</a>')
+        .addTo(map);
+      let loaded = 0, failed = 0;
+      L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', { subdomains: '0123', maxZoom: 18, className: 'map-tiles' })
+        .on('tileload', () => {
+          if (loaded++) return;
+          mapBox.classList.add('is-live');
+          activate.hidden = false;
+        })
+        // тайлы не грузятся совсем — остаёмся на статичной карте
+        .on('tileerror', () => {
+          if (++failed > 8 && !loaded && map) { map.remove(); map = null; }
+        })
+        .addTo(map);
+      const icon = L.divIcon({ className: 'map-marker', html: pinSvg, iconSize: [36, 46], iconAnchor: [18, 45] });
+      L.marker(point, { icon, keyboard: false, title: 'Вилен Окна, ул. Красина, 56' }).addTo(map);
     };
+
     const near = new IntersectionObserver(([en]) => {
       if (!en.isIntersecting) return;
       near.disconnect();
-      load();
+      Promise.all([
+        loadAsset('link', { rel: 'stylesheet', href: 'assets/vendor/leaflet/leaflet.css' }),
+        loadAsset('script', { src: 'assets/vendor/leaflet/leaflet.js' }),
+      ]).then(build).catch(() => {});
     }, { rootMargin: '600px 0px' });
     near.observe(mapBox);
 
-    activate.addEventListener('click', () => {
-      setActive(true);
-      const frame = frameOf();
-      if (frame) frame.focus();
-    });
+    activate.addEventListener('click', () => setActive(true));
     mapBox.addEventListener('mouseleave', () => setActive(false));
     // карта ушла с экрана — снова защищаем прокрутку от случайных жестов
     new IntersectionObserver(([en]) => { if (!en.isIntersecting) setActive(false); }).observe(mapBox);
@@ -457,8 +483,8 @@
   };
   // балконы: автопереключение вариантов
   whileVisible(q('.balc'), (on) => { if (balcTween) on && balcAuto ? balcTween.play() : balcTween.pause(); }, '-25% 0px -25% 0px');
-  // бегущие отзывы и пульс метки на карте не крутятся за пределами экрана
-  qa('.marquee, .contact__map').forEach((el) => whileVisible(el, (on) => el.classList.toggle('is-running', on), '100px 0px'));
+  // бегущие отзывы не крутятся за пределами экрана
+  qa('.marquee').forEach((el) => whileVisible(el, (on) => el.classList.toggle('is-running', on), '100px 0px'));
 
   /* ---------- этапы: кружки загораются по мере прокрутки ---------- */
   const stepIO = new IntersectionObserver((entries) => {
