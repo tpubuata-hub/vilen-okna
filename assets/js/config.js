@@ -4,7 +4,6 @@
 window.SITE_CONFIG = {
   phones: [
     { label: '+7 952 901-20-57', href: 'tel:+79529012057' },
-    { label: '+7 913 892-68-20', href: 'tel:+79138926820' },
   ],
   whatsapp: '79529012057',
   email: 'okna54.vit@mail.ru',

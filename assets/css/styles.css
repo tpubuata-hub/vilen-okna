@@ -353,6 +353,24 @@ legend { padding: 0; }
 .services b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
 .services span { display: block; margin-top: 4px; color: var(--ink-2); font-size: 16px; line-height: 1.45; }
 
+/* ---------- Профили ---------- */
+.profiles {
+  margin-top: 20px; padding: clamp(24px, 3vw, 40px) clamp(24px, 3.4vw, 48px);
+  border-radius: var(--radius-tile); background: var(--tile);
+  display: flex; align-items: center; justify-content: space-between; gap: 24px 48px; flex-wrap: wrap;
+}
+.profiles__copy { max-width: 30rem; }
+.profiles__label { font-size: 15px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.profiles__text { margin-top: 8px; font-size: 17px; line-height: 1.45; color: var(--ink); }
+.profiles__list { display: flex; flex-wrap: wrap; }
+.profiles__list li {
+  padding: 6px clamp(18px, 2.4vw, 40px);
+  font-size: clamp(24px, 2.4vw, 34px); font-weight: 800; letter-spacing: .02em; line-height: 1;
+  color: var(--ink-strong);
+}
+.profiles__list li + li { border-left: 1px solid var(--line); }
+.profiles__list li:last-child { padding-right: 0; }
+
 /* ---------- Балконы ---------- */
 .balc { display: grid; grid-template-columns: minmax(280px, 4fr) 8fr; gap: 24px; align-items: stretch; }
 .balc__chips { display: grid; gap: 10px; align-content: center; }
@@ -395,6 +413,8 @@ legend { padding: 0; }
   transition: opacity 1s var(--ease), scale 1.6s var(--ease);
 }
 .balc__media img.is-active { opacity: 1; scale: 1; }
+.balc__media img[src*="balcony-sliding"] { object-position: 50% 42%; }
+.balc__media img[src*="balcony-white"] { object-position: 50% 48%; }
 
 /* ---------- Калькулятор ---------- */
 .calc {
@@ -507,6 +527,8 @@ legend { padding: 0; }
 .range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(22, 137, 232, .35), 0 1px 6px rgba(0, 0, 0, .22); }
 
 .seg-small { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg-small--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.seg-small--4 span { padding-inline: 6px; font-size: 13.5px; }
 .seg-small label, .checks label { position: relative; }
 .seg-small input, .checks input { position: absolute; opacity: 0; pointer-events: none; }
 .seg-small span, .checks span {
@@ -534,6 +556,7 @@ legend { padding: 0; }
 .calc__summary { display: grid; gap: 4px; min-height: 3.2em; }
 .calc__summary b { font-size: clamp(20px, 1.7vw, 24px); font-weight: 650; letter-spacing: -0.025em; line-height: 1.2; color: var(--ink-strong); }
 .calc__summary span { font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.calc__stage, .calc__panel { min-width: 0; }
 .calc__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 .calc__actions .btn { flex: 1 1 auto; }
 .calc__note { font-size: 13px; color: var(--ink-2); margin-top: -8px; }
@@ -561,12 +584,18 @@ legend { padding: 0; }
 .work--half { grid-column: span 6; }
 .work--third { grid-column: span 4; }
 .work--pair { grid-column: 1 / -1; }
+.work--quarter { grid-column: span 3; }
 .work__media {
   position: relative; display: block; width: 100%; padding: 0; border: 0;
   aspect-ratio: 4 / 3; border-radius: 24px; overflow: hidden;
   background: var(--line-soft); cursor: zoom-in;
 }
-.work--tall .work__media { aspect-ratio: auto; flex: 1; min-height: 380px; }
+.work--tall .work__media, .work--quarter .work__media { aspect-ratio: auto; flex: 1; min-height: 380px; }
+/* фото одного ряда выравниваются по общим линиям сетки, даже если подписи разной длины */
+@supports (grid-template-rows: subgrid) {
+  .work { display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: 14px; }
+  .work--tall .work__media, .work--quarter .work__media { min-height: 0; }
+}
 .work__media img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   transition: transform 1.1s var(--ease);
@@ -831,8 +860,11 @@ textarea.input { resize: vertical; min-height: 96px; }
 
   .works { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; }
   .work--xl, .work--pair { grid-column: 1 / -1; }
-  .work--tall, .work--half, .work--third { grid-column: auto; }
-  .work--tall .work__media { min-height: 300px; }
+  .work--tall, .work--half, .work--third, .work--quarter { grid-column: auto; }
+  /* на планшете карточки в две колонки квадратные, чтобы ряды были ровными */
+  .work--tall .work__media, .work--half .work__media, .work--third .work__media, .work--quarter .work__media { flex: none; aspect-ratio: 1 / 1; min-height: 0; }
+  .profiles { flex-direction: column; align-items: flex-start; }
+  .profiles__list li:first-child { padding-left: 0; }
   .lightbox__figure { padding: 68px 16px 104px; }
   .lightbox__img { max-height: calc(100vh - 200px); max-height: calc(100dvh - 200px); }
   .lightbox__prev, .lightbox__next { top: auto; bottom: 28px; transform: none; }
@@ -886,9 +918,14 @@ textarea.input { resize: vertical; min-height: 96px; }
   .calc { border-radius: 26px; }
   .calc__stage { padding: 12px 8px; }
   .calc__actions .btn { width: 100%; }
+  .calc__actions .btn, .form__actions .btn { padding-inline: 16px; white-space: normal; text-align: center; }
   .form__actions { grid-template-columns: 1fr; }
   .works { grid-template-columns: 1fr; gap: 28px; }
-  .work--tall .work__media { flex: none; aspect-ratio: 4 / 5; min-height: 0; }
+  .work--tall .work__media, .work--quarter .work__media { flex: none; aspect-ratio: 4 / 5; min-height: 0; }
+  .work--half .work__media, .work--third .work__media { aspect-ratio: 4 / 3; }
+  .seg-small.seg-small--4 { grid-template-columns: 1fr 1fr; }
+  .profiles__list { gap: 6px 16px; }
+  .profiles__list li, .profiles__list li:first-child { padding: 0; border: 0; font-size: 20px; }
   .work__pair { gap: 10px; }
   .work__pair .work__media { aspect-ratio: 3 / 4; border-radius: 20px; }
   .work__media { border-radius: 20px; }
@@ -898,6 +935,18 @@ textarea.input { resize: vertical; min-height: 96px; }
   .section__head--row { display: block; }
   .section__head--row .section__lead { margin-top: 16px; }
   .map-label { display: none; }
+}
+
+@media (max-width: 359px) {
+  .brand__mark { width: 32px; }
+  .brand__name { font-size: 20px; }
+  .brand__sub { font-size: 10.5px; }
+}
+
+@media (max-width: 379px) {
+  .dock { left: 8px; right: 8px; gap: 6px; padding: 6px; }
+  .dock .btn { font-size: 14px; padding-inline: 8px; gap: 6px; }
+  .dock .icon { width: 17px; height: 17px; }
 }
 
 /* ==========================================================================

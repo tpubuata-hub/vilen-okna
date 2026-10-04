@@ -30,6 +30,7 @@
     insulation: 'утепление пола и стен', finish: 'отделка под ключ', roof: 'крыша',
   };
   const SHAPE_NAMES = { straight: 'прямой', corner: 'Г-образный', u: 'П-образный' };
+  const profileName = () => (state.profile === 'advise' ? 'профиль на ваш выбор' : `профиль ${state.profile}`);
 
   const state = {
     mode: 'window',
@@ -38,6 +39,7 @@
     h: 1400,
     sashes: ['fixed', 'tilt'],
     glass: 2,
+    profile: 'advise',
     wextras: new Set(['sill']),
     shape: 'straight',
     len: 3,
@@ -71,6 +73,7 @@
       const t = TYPES[state.type];
       const details = [
         state.sashes.map((k) => SASH_NAMES[k]).join(' + '),
+        profileName(),
         state.glass === 2 ? 'двухкамерный стеклопакет' : 'однокамерный стеклопакет',
         ...[...state.wextras].map((k) => EXTRA_NAMES[k]),
       ];
@@ -339,6 +342,7 @@
     const t = e.target;
     if (t.name === 'wtype') { applyType(t.value); render(true); return; }
     if (t.name === 'glass') state.glass = +t.value;
+    if (t.name === 'profile') state.profile = t.value;
     if (t.name === 'wextra') t.checked ? state.wextras.add(t.value) : state.wextras.delete(t.value);
     if (t.name === 'bshape') { state.shape = t.value; render(true); return; }
     if (t.name === 'bglazing') state.glazing = t.value;
@@ -357,6 +361,7 @@
       const t = TYPES[state.type];
       lines.push(`${t.name}, ${state.w} × ${state.h} мм`);
       lines.push(`Створки: ${state.sashes.map((k) => SASH_NAMES[k]).join(', ')}`);
+      lines.push(`Профиль: ${state.profile === 'advise' ? 'посоветуйте' : state.profile}`);
       lines.push(`Стеклопакет: ${state.glass === 2 ? 'двухкамерный' : 'однокамерный'}`);
       if (state.wextras.size) lines.push(`Дополнительно: ${[...state.wextras].map((k) => EXTRA_NAMES[k]).join(', ')}`);
     } else {
