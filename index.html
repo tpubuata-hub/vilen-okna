@@ -15,13 +15,14 @@
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-cyrillic.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css?v=1">
   <link rel="preload" as="image" href="assets/img/hero-interior-1280.webp" imagesrcset="assets/img/hero-interior-1280.webp 1280w, assets/img/hero-interior-2400.webp 2400w" imagesizes="(min-width: 1024px) 60vw, 100vw">
-  <link rel="stylesheet" href="assets/css/styles.css?v=10">
+  <link rel="stylesheet" href="assets/css/styles.css?v=14">
   <script>
     (function () {
       var d = document.documentElement;
       d.classList.add('js');
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('motion');
-      window.addEventListener('load', function () { if (!window.gsap) d.classList.remove('motion'); });
+      // если скрипт анимаций не запустился, показываем всё сразу, без анимации
+      window.addEventListener('load', function () { if (!window.__voMotion) d.classList.remove('motion'); });
     })();
   </script>
   <script type="application/ld+json">
@@ -643,15 +644,15 @@
             </a>
           </div>
 
-          <a class="tile contact__map reveal" href="https://2gis.ru/novosibirsk/firm/70000001069487037" target="_blank" rel="noopener" aria-label="Открыть адрес Вилен Окна в 2ГИС: Новосибирск, улица Красина, 56">
-            <img class="contact__map-img" src="assets/img/map-krasina-56.webp" width="1800" height="720" loading="lazy" decoding="async" alt="">
+          <div class="tile contact__map reveal" id="map" data-firm="70000001069487037" data-lat="55.042953" data-lon="82.963524">
+            <!-- заставка, пока не загрузилась карта 2ГИС (и если она не загрузится) -->
+            <img class="contact__map-img" src="assets/img/map-krasina-56.webp" width="1800" height="720" loading="lazy" decoding="async" alt="Карта: Новосибирск, улица Красина, 56">
             <span class="map-credit" aria-hidden="true">© участники OpenStreetMap</span>
             <span class="map-pin" aria-hidden="true"><i></i></span>
             <span class="map-label" aria-hidden="true">Вилен Окна<br><span>ул. Красина, 56</span></span>
-            <span class="map-open" aria-hidden="true">Маршрут в 2ГИС
-              <svg class="icon" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
-          </a>
+            <div class="contact__map-live"></div>
+            <button class="map-activate" type="button" hidden><span>Нажмите, чтобы двигать карту</span></button>
+          </div>
         </div>
       </div>
     </section>
@@ -717,10 +718,9 @@
   </div>
 
   <script src="assets/vendor/gsap.min.js" defer></script>
-  <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
   <script src="assets/vendor/lenis.min.js" defer></script>
   <script src="assets/js/config.js?v=7" defer></script>
-  <script src="assets/js/calculator.js?v=7" defer></script>
-  <script src="assets/js/main.js?v=8" defer></script>
+  <script src="assets/js/calculator.js?v=8" defer></script>
+  <script src="assets/js/main.js?v=11" defer></script>
 </body>
 </html>

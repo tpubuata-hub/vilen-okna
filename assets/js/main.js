@@ -2,13 +2,13 @@
   const cfg = window.SITE_CONFIG;
   const docEl = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const hasGsap = !!(window.gsap && window.ScrollTrigger);
+  const hasGsap = !!window.gsap;
   const motion = hasGsap && !reduce;
   const q = (s, r = document) => r.querySelector(s);
   const qa = (s, r = document) => [...r.querySelectorAll(s)];
 
   if (!motion) docEl.classList.remove('motion');
-  if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  window.__voMotion = motion;
 
   /* ======================================================================
      Заявки: WhatsApp или почта, а если указан свой обработчик, то на него
@@ -135,12 +135,24 @@
   const dock = q('#dock');
   let lenis = null;
 
-  const onScroll = () => {
+  // Высоту первого экрана запоминаем один раз и обновляем через ResizeObserver:
+  // чтение offsetHeight на каждом событии прокрутки заставляло браузер
+  // пересчитывать раскладку посреди кадра.
+  let heroHeight = hero.offsetHeight;
+  if ('ResizeObserver' in window) new ResizeObserver(([en]) => { heroHeight = en.target.offsetHeight; }).observe(hero);
+  let scrollQueued = false;
+  const applyScroll = () => {
+    scrollQueued = false;
     const y = window.scrollY;
     header.classList.toggle('is-compact', y > 24);
-    if (dock) dock.classList.toggle('is-visible', y > hero.offsetHeight - window.innerHeight * 0.35);
+    if (dock) dock.classList.toggle('is-visible', y > heroHeight - window.innerHeight * 0.35);
   };
-  onScroll();
+  const onScroll = () => {
+    if (scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(applyScroll);
+  };
+  applyScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
   function setMenu(open) {
@@ -317,93 +329,144 @@
     });
   }
 
+  /* ======================================================================
+     Карта 2ГИС. Виджет создаётся, только когда до контактов остаётся
+     немного прокрутки, поэтому не тормозит загрузку страницы; до этого на
+     его месте статичная карта. Двигать карту можно после нажатия, иначе она
+     перехватывала бы прокрутку страницы колесом и пальцем.
+     ====================================================================== */
+  const mapBox = q('#map');
+  if (mapBox && 'IntersectionObserver' in window) {
+    const live = q('.contact__map-live', mapBox);
+    const activate = q('.map-activate', mapBox);
+    const frameOf = () => q('iframe', live);
+    const setActive = (on) => {
+      mapBox.classList.toggle('is-active', on);
+      const frame = frameOf();
+      if (frame) frame.tabIndex = on ? 0 : -1;
+    };
+    const load = () => {
+      const opts = {
+        pos: { lat: +mapBox.dataset.lat, lon: +mapBox.dataset.lon, zoom: 16 },
+        opt: { city: 'novosibirsk' },
+        org: mapBox.dataset.firm,
+      };
+      const frame = document.createElement('iframe');
+      frame.title = 'Карта 2ГИС: Вилен Окна, Новосибирск, улица Красина, 56';
+      frame.src = 'https://widgets.2gis.com/widget?type=firmsonmap&options=' + encodeURIComponent(JSON.stringify(opts));
+      frame.tabIndex = -1;
+      frame.addEventListener('load', () => { mapBox.classList.add('is-live'); activate.hidden = false; }, { once: true });
+      live.appendChild(frame);
+    };
+    const near = new IntersectionObserver(([en]) => {
+      if (!en.isIntersecting) return;
+      near.disconnect();
+      load();
+    }, { rootMargin: '600px 0px' });
+    near.observe(mapBox);
+
+    activate.addEventListener('click', () => {
+      setActive(true);
+      const frame = frameOf();
+      if (frame) frame.focus();
+    });
+    mapBox.addEventListener('mouseleave', () => setActive(false));
+    // карта ушла с экрана — снова защищаем прокрутку от случайных жестов
+    new IntersectionObserver(([en]) => { if (!en.isIntersecting) setActive(false); }).observe(mapBox);
+  }
+
   if (!motion) {
     qa('[data-count]').forEach((n) => { n.textContent = (+n.dataset.count).toFixed(+n.dataset.decimals || 0).replace('.', ','); });
     return;
   }
 
   /* ======================================================================
-     Дальше только анимация
+     Дальше только анимация.
+     На каждом кадре прокрутки ничего не считается: блоки появляются через
+     CSS-переходы по одному IntersectionObserver, а параллакс фото и линия
+     этапов — CSS-анимации, привязанные к прокрутке (их ведёт браузер, без
+     JS). Раньше всё это делал ScrollTrigger: при загрузке он десятки раз
+     заставлял пересчитывать раскладку, а при прокрутке проверял все триггеры
+     на каждом кадре.
      ====================================================================== */
-  ScrollTrigger.config({ ignoreMobileResize: true });
+  const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 300));
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-  lenis = new Lenis({ duration: 1.1, easing: (x) => Math.min(1, 1.001 - Math.pow(2, -10 * x)) });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
+  // Плавное колесо мыши — только где есть мышь. На телефоне прокрутка родная,
+  // Lenis там всё равно не работает, а свой цикл кадров у него бы остался.
+  if (window.Lenis && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    idle(() => {
+      lenis = new Lenis({ duration: 1.1, easing: (x) => Math.min(1, 1.001 - Math.pow(2, -10 * x)), autoRaf: true });
+    });
+  }
 
   /* ---------- заголовки по словам ---------- */
   qa('.reveal-lines').forEach((h) => {
-    const words = h.textContent.trim().split(/\s+/);
-    h.setAttribute('aria-label', h.textContent.trim());
-    h.innerHTML = words.map((w) => `<span class="w" aria-hidden="true"><span>${w}</span></span>`).join(' ');
-    gsap.from(qa('.w > span', h), {
-      yPercent: 110, duration: 1.1, stagger: 0.05, ease: 'expo.out',
-      scrollTrigger: { trigger: h, start: 'top 86%', once: true },
-    });
+    const text = h.textContent.trim();
+    h.setAttribute('aria-label', text);
+    h.innerHTML = text.split(/\s+/).map((w, i) => `<span class="w" aria-hidden="true"><span style="--i:${i}">${esc(w)}</span></span>`).join(' ');
   });
 
-  /* ---------- блоки ---------- */
-  ScrollTrigger.batch('.reveal', {
-    start: 'top 88%',
-    once: true,
-    onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, duration: 1.1, stagger: 0.1, ease: 'expo.out', overwrite: true }),
-  });
-
-  // параллакс фото в плитках
-  qa('.tile__media img').forEach((img) => {
-    gsap.fromTo(img, { yPercent: -12 }, {
-      yPercent: 0, ease: 'none',
-      scrollTrigger: { trigger: img.closest('.tile'), start: 'top bottom', end: 'bottom top', scrub: true },
+  /* ---------- появление блоков: один наблюдатель на всё ---------- */
+  const onEnter = new Map();
+  const enter = new IntersectionObserver((entries) => {
+    let n = 0;
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      // блоки, появившиеся одновременно, идут лесенкой
+      if (el.classList.contains('reveal')) el.style.setProperty('--stagger', `${n++ * 100}ms`);
+      el.classList.add('is-in');
+      enter.unobserve(el);
+      const fn = onEnter.get(el);
+      if (fn) fn();
     });
-  });
+  }, { rootMargin: '0px 0px -12% 0px' });
+  qa('.reveal, .reveal-lines, .steps, .work__media').forEach((el) => enter.observe(el));
 
   // счётчики
   qa('[data-count]').forEach((n) => {
     const to = +n.dataset.count, dec = +n.dataset.decimals || 0;
-    const o = { v: 0 };
-    n.textContent = (0).toFixed(dec).replace('.', ',');
-    gsap.to(o, {
-      v: to, duration: 1.6, ease: 'power3.out',
-      onUpdate: () => { n.textContent = o.v.toFixed(dec).replace('.', ','); },
-      scrollTrigger: { trigger: n, start: 'top 90%', once: true },
+    const fmt = (v) => v.toFixed(dec).replace('.', ',');
+    n.textContent = fmt(0);
+    onEnter.set(n, () => {
+      if (!hasGsap) { n.textContent = fmt(to); return; }
+      const o = { v: 0 };
+      gsap.to(o, { v: to, duration: 1.6, ease: 'power3.out', onUpdate: () => { n.textContent = fmt(o.v); } });
     });
+    enter.observe(n);
   });
 
-  // балконы: автопрокрутка, только когда блок на экране
-  ScrollTrigger.create({
-    trigger: '.balc', start: 'top 75%', end: 'bottom 25%',
-    onToggle: (self) => { if (balcTween) self.isActive && balcAuto ? balcTween.play() : balcTween.pause(); },
-  });
-
-  // этапы: линия рисуется по мере прокрутки
-  const stepEls = qa('.step');
-  const mm = gsap.matchMedia();
-  mm.add({ desktop: '(min-width: 1024px)', mobile: '(max-width: 1023px)' }, (ctx) => {
-    const { desktop } = ctx.conditions;
-    gsap.fromTo('.steps__rail i', desktop ? { scaleX: 0 } : { scaleY: 0 }, {
-      ...(desktop ? { scaleX: 1 } : { scaleY: 1 }),
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.steps', start: desktop ? 'top 75%' : 'top 70%', end: desktop ? 'top 30%' : 'bottom 60%', scrub: 0.6,
-        onUpdate: (self) => {
-          stepEls.forEach((s, i) => s.classList.toggle('is-on', self.progress >= i / (stepEls.length - 1) - 0.02));
-        },
-      },
+  // до и после (если блок есть на странице): подсказка, что фото можно сравнить
+  const ba = q('#ba');
+  const baRange = ba && q('.ba__range', ba);
+  if (ba && baRange && hasGsap) {
+    onEnter.set(ba, () => {
+      const o = { p: 50 };
+      const set = () => ba.style.setProperty('--pos', o.p + '%');
+      gsap.timeline({ onComplete: () => { baRange.value = 50; } })
+        .to(o, { p: 26, duration: 0.9, ease: 'power2.inOut', onUpdate: set })
+        .to(o, { p: 50, duration: 1.1, ease: 'power3.inOut', onUpdate: set });
     });
-    gsap.from(stepEls, {
-      y: 40, opacity: 0, duration: 1, stagger: 0.12, ease: 'expo.out',
-      scrollTrigger: { trigger: '.steps', start: 'top 80%', once: true },
-    });
-  });
+    enter.observe(ba);
+  }
 
-  // фото работ: лёгкое проявление при появлении на экране
-  qa('.work__media img').forEach((img) => {
-    gsap.fromTo(img, { scale: 1.08 }, {
-      scale: 1, duration: 1.4, ease: 'expo.out', clearProps: 'transform',
-      scrollTrigger: { trigger: img, start: 'top 90%', once: true },
-    });
-  });
+  /* ---------- то, что работает только пока видно ---------- */
+  const whileVisible = (el, fn, rootMargin = '0px') => {
+    if (el) new IntersectionObserver(([en]) => fn(en.isIntersecting), { rootMargin }).observe(el);
+  };
+  // балконы: автопереключение вариантов
+  whileVisible(q('.balc'), (on) => { if (balcTween) on && balcAuto ? balcTween.play() : balcTween.pause(); }, '-25% 0px -25% 0px');
+  // бегущие отзывы и пульс метки на карте не крутятся за пределами экрана
+  qa('.marquee, .contact__map').forEach((el) => whileVisible(el, (on) => el.classList.toggle('is-running', on), '100px 0px'));
 
-  window.addEventListener('load', () => ScrollTrigger.refresh());
+  /* ---------- этапы: кружки загораются по мере прокрутки ---------- */
+  const stepIO = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      // выше линии на 60% экрана — горит; ушёл вниз при прокрутке назад — гаснет
+      const above = en.isIntersecting || en.boundingClientRect.top < 0;
+      en.target.classList.toggle('is-on', above);
+    });
+  }, { rootMargin: '0px 0px -40% 0px' });
+  qa('.step').forEach((s) => stepIO.observe(s));
 })();

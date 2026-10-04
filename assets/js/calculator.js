@@ -334,7 +334,6 @@
         x.setAttribute('aria-selected', on);
       });
       render(true);
-      if (window.ScrollTrigger) ScrollTrigger.refresh();
     });
   });
 
