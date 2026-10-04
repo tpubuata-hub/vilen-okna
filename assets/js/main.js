@@ -78,6 +78,17 @@
     });
   }
 
+  const consentInput = q('#lead-consent');
+  const consentError = q('#lead-consent-error');
+  if (consentInput) {
+    consentInput.addEventListener('change', () => {
+      if (consentInput.checked) {
+        consentInput.removeAttribute('aria-invalid');
+        consentError.hidden = true;
+      }
+    });
+  }
+
   if (leadForm) {
     leadForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -91,6 +102,14 @@
         phoneInput.focus();
         return;
       }
+      // Без отмеченного согласия заявку не отправляем (152-ФЗ, согласие отдельным документом)
+      if (consentInput && !consentInput.checked) {
+        consentInput.setAttribute('aria-invalid', 'true');
+        consentInput.setAttribute('aria-describedby', 'lead-consent-error');
+        consentError.hidden = false;
+        consentInput.focus();
+        return;
+      }
       const name = (fd.get('name') || '').trim();
       const topics = fd.getAll('topic');
       const comment = (fd.get('comment') || '').trim();
@@ -100,6 +119,7 @@
       if (comment) lines.push(`Комментарий: ${comment}`);
       window.sendLead({
         source: 'zamer', name, phone: phoneDigits ? '+7' + phoneDigits : '', topic: topics.join(', '), comment,
+        consent: true, consentAt: new Date().toISOString(),
         text: lines.join('\n'), subject: 'Заявка на замер с сайта',
       }, leadForm, e.submitter && e.submitter.dataset.channel);
     });

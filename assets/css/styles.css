@@ -734,10 +734,14 @@ textarea.input { resize: vertical; min-height: 96px; }
 
 .contact__map { grid-column: 1 / -1; height: clamp(300px, 34vw, 420px); background: var(--line-soft); }
 .contact__map { display: block; }
-.contact__map iframe {
-  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
-  filter: grayscale(1) contrast(1.04) brightness(1.05);
-  pointer-events: none;
+.contact__map-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 50%;
+}
+.map-credit {
+  position: absolute; left: 12px; bottom: 10px;
+  padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, .85);
+  font-size: 11px; color: var(--ink-2);
 }
 .map-open {
   position: absolute; right: 20px; bottom: 20px;
@@ -776,10 +780,60 @@ textarea.input { resize: vertical; min-height: 96px; }
 .footer__contact { display: grid; gap: 8px; align-content: start; font-size: 16px; font-weight: 500; }
 .footer__contact .muted { font-size: 14px; font-weight: 400; }
 .footer__legal {
-  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  display: flex; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap;
   margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line-soft);
-  color: var(--ink-3); font-size: 12px;
+  color: var(--ink-2); font-size: 13px; line-height: 1.5;
 }
+.footer__docs { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+.footer__docs a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.footer__docs a:hover { color: var(--blue-btn); text-decoration-color: currentColor; }
+
+/* ---------- Согласие на обработку данных ---------- */
+.consent { display: grid; gap: 6px; }
+.consent__label { position: relative; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.consent__input { position: absolute; width: 22px; height: 22px; margin: 0; opacity: 0; }
+.consent__box {
+  position: relative; flex: none; width: 22px; height: 22px; margin-top: 1px;
+  border: 1.5px solid #9fb0c2; border-radius: 6px; background: #fff;
+  transition: background-color .2s, border-color .2s;
+}
+.consent__box::after {
+  content: ""; position: absolute; left: 6.5px; top: 2.5px; width: 6px; height: 11px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0);
+  transition: transform .2s var(--ease);
+}
+.consent__input:checked + .consent__box { background: var(--blue-btn); border-color: var(--blue-btn); }
+.consent__input:checked + .consent__box::after { transform: rotate(45deg) scale(1); }
+.consent__input:focus-visible + .consent__box { outline: 3px solid rgba(22, 137, 232, .45); outline-offset: 2px; }
+.consent__input[aria-invalid="true"] + .consent__box { border-color: #d70015; }
+.consent__text { font-size: 15px; line-height: 1.45; color: var(--ink); }
+.consent__text a, .form__note a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.form__note { line-height: 1.5; }
+
+/* ---------- Страницы документов ---------- */
+.doc-page { background: var(--canvas); }
+.doc-header { background: #fff; border-bottom: 1px solid var(--line-soft); }
+.doc-header__inner {
+  width: min(820px, 100% - 2 * var(--gutter)); margin-inline: auto; padding-block: 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.doc {
+  width: min(820px, 100% - 2 * var(--gutter)); margin: 40px auto 48px;
+  padding: clamp(24px, 4.4vw, 56px);
+  border-radius: var(--radius-tile); background: #fff;
+}
+.doc h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 750; line-height: 1.1; letter-spacing: -0.03em; color: var(--ink-strong); text-wrap: balance; }
+.doc__meta { margin-top: 10px; font-size: 15px; color: var(--ink-2); }
+.doc h2 { margin-top: 36px; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink-strong); }
+.doc p { margin-top: 12px; font-size: 16px; line-height: 1.6; }
+.doc ul { margin-top: 10px; padding-left: 22px; list-style: disc; }
+.doc li { margin-top: 6px; font-size: 16px; line-height: 1.6; }
+.doc li::marker { color: var(--blue); }
+.doc a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.doc__card { margin-top: 14px; padding: 18px 22px; border-radius: 16px; background: var(--canvas); }
+.doc__card p { margin-top: 4px; }
+.doc__card p:first-child { margin-top: 0; }
+.doc-footer { width: min(820px, 100% - 2 * var(--gutter)); margin: 0 auto; padding-bottom: 40px; text-align: center; font-size: 13px; color: var(--ink-2); }
 
 /* ---------- Нижняя панель на телефоне ---------- */
 .dock { display: none; }
