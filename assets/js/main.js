@@ -11,15 +11,20 @@
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
 
   /* ======================================================================
-     Заявки: на свой обработчик, если он указан, иначе в WhatsApp
+     Заявки: WhatsApp или почта, а если указан свой обработчик, то на него
      ====================================================================== */
-  window.sendLead = (data, formEl) => {
-    if (!cfg.formEndpoint) {
-      window.open(`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(data.text)}`, '_blank', 'noopener');
-      return;
-    }
-    const btn = formEl && formEl.querySelector('[type="submit"]');
-    if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = 'Отправляем…'; }
+  const openWhatsApp = (text) => {
+    window.open(`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  };
+  const openMail = (subject, text) => {
+    location.href = `mailto:${cfg.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text.replace(/\n/g, '\r\n'))}`;
+  };
+
+  window.sendLead = (data, formEl, channel) => {
+    if (channel === 'email') { openMail(data.subject || 'Заявка с сайта', data.text); return; }
+    if (!cfg.formEndpoint) { openWhatsApp(data.text); return; }
+    const btn = formEl && formEl.querySelector('[data-channel="whatsapp"]');
+    if (btn) { btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = 'Отправляем…'; }
     fetch(cfg.formEndpoint, {
       method: 'POST',
       mode: 'no-cors',
@@ -33,12 +38,16 @@
       })
       .catch(() => {
         // обработчик недоступен: не теряем заявку, открываем WhatsApp
-        window.open(`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(data.text)}`, '_blank', 'noopener');
-        if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label; }
+        openWhatsApp(data.text);
+        if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.label; }
       });
   };
 
-  if (cfg.formEndpoint) qa('.calc__note, .form__note').forEach((n) => { n.hidden = true; });
+  if (cfg.formEndpoint) {
+    qa('.calc__note, .form__note, [data-channel="email"]').forEach((n) => { n.hidden = true; });
+    qa('#lead-form [data-channel="whatsapp"]').forEach((b) => { b.textContent = 'Записаться на замер'; });
+    qa('#calc-form [data-channel="whatsapp"]').forEach((b) => { b.textContent = 'Отправить запрос'; });
+  }
 
   /* ---------- форма замера ---------- */
   const leadForm = q('#lead-form');
@@ -90,8 +99,9 @@
       if (phoneDigits) lines.push(`Телефон: ${formatPhone(phoneDigits)}`);
       if (comment) lines.push(`Комментарий: ${comment}`);
       window.sendLead({
-        source: 'zamer', name, phone: phoneDigits ? '+7' + phoneDigits : '', topic: topics.join(', '), comment, text: lines.join('\n'),
-      }, leadForm);
+        source: 'zamer', name, phone: phoneDigits ? '+7' + phoneDigits : '', topic: topics.join(', '), comment,
+        text: lines.join('\n'), subject: 'Заявка на замер с сайта',
+      }, leadForm, e.submitter && e.submitter.dataset.channel);
     });
   }
 
@@ -208,12 +218,68 @@
   showBalc(0, false);
 
   /* ======================================================================
-     До и после
+     Наши работы: просмотр фото на весь экран
      ====================================================================== */
-  const ba = q('#ba');
-  const baRange = q('.ba__range');
-  if (ba && baRange) {
-    baRange.addEventListener('input', () => ba.style.setProperty('--pos', baRange.value + '%'));
+  const lightbox = q('#lightbox');
+  const shots = qa('.work__media');
+  if (lightbox && shots.length && typeof lightbox.showModal === 'function') {
+    const lbImg = q('.lightbox__img', lightbox);
+    const lbText = q('.lightbox__text', lightbox);
+    const lbCount = q('.lightbox__count', lightbox);
+    let current = 0;
+    let opener = null;
+
+    const show = (i) => {
+      current = (i + shots.length) % shots.length;
+      const b = shots[current];
+      const img = q('img', b);
+      lbImg.classList.add('is-loading');
+      const next = new Image();
+      next.onload = next.onerror = () => {
+        lbImg.src = b.dataset.full;
+        lbImg.alt = img ? img.alt : '';
+        requestAnimationFrame(() => lbImg.classList.remove('is-loading'));
+      };
+      next.src = b.dataset.full;
+      lbText.textContent = b.dataset.caption || '';
+      lbCount.textContent = `${current + 1} / ${shots.length}`;
+      // заранее грузим соседнее фото
+      new Image().src = shots[(current + 1) % shots.length].dataset.full;
+    };
+
+    const open = (i, btn) => {
+      opener = btn;
+      show(i);
+      lightbox.showModal();
+      document.body.style.overflow = 'hidden';
+      if (lenis) lenis.stop();
+    };
+    const close = () => { if (lightbox.open) lightbox.close(); };
+
+    lightbox.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      if (lenis) lenis.start();
+      if (opener) opener.focus({ preventScroll: true });
+    });
+    shots.forEach((b, i) => b.addEventListener('click', () => open(i, b)));
+    q('.lightbox__prev', lightbox).addEventListener('click', () => show(current - 1));
+    q('.lightbox__next', lightbox).addEventListener('click', () => show(current + 1));
+    q('.lightbox__close', lightbox).addEventListener('click', close);
+    // клик по тёмному фону закрывает
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox || e.target.classList.contains('lightbox__figure')) close(); });
+    lightbox.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1); }
+    });
+    // свайп на телефоне
+    let startX = null;
+    lightbox.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    lightbox.addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const dx = e.clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+    });
   }
 
   /* ======================================================================
@@ -311,22 +377,11 @@
     });
   });
 
-  // до и после: подсказка, что фото можно сравнить
-  if (ba) {
-    const o = { p: 50 };
-    gsap.timeline({ scrollTrigger: { trigger: ba, start: 'top 65%', once: true } })
-      .to(o, { p: 26, duration: 0.9, ease: 'power2.inOut', onUpdate: () => ba.style.setProperty('--pos', o.p + '%') })
-      .to(o, { p: 50, duration: 1.1, ease: 'power3.inOut', onUpdate: () => ba.style.setProperty('--pos', o.p + '%') })
-      .eventCallback('onComplete', () => { baRange.value = 50; });
-  }
-
-  // галерея: на компьютере едет вбок при прокрутке
-  mm.add('(min-width: 1024px)', () => {
-    const track = q('.gallery__track');
-    gsap.fromTo(track, { x: 0 }, {
-      x: () => -(track.scrollWidth - window.innerWidth) * 0.6,
-      ease: 'none',
-      scrollTrigger: { trigger: '.gallery', start: 'top bottom', end: 'bottom top', scrub: 0.5, invalidateOnRefresh: true },
+  // фото работ: лёгкое проявление при появлении на экране
+  qa('.work__media img').forEach((img) => {
+    gsap.fromTo(img, { scale: 1.08 }, {
+      scale: 1, duration: 1.4, ease: 'expo.out', clearProps: 'transform',
+      scrollTrigger: { trigger: img, start: 'top 90%', once: true },
     });
   });
 

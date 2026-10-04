@@ -1,20 +1,20 @@
 /*
- * Калькулятор окна и балкона.
+ * Конструктор запроса на расчёт окна и балкона.
  * Схема рисуется как эскиз замерщика: размеры в миллиметрах и условные
  * обозначения открывания (вершина треугольника смотрит на петли).
+ * Цен на сайте нет: параметры уходят заказчику, он присылает расчёт.
  */
 (() => {
   const root = document.getElementById('calc');
   if (!root) return;
 
-  const P = window.SITE_CONFIG.prices;
   const svg = document.getElementById('calc-svg');
   const sashBox = document.getElementById('calc-sashes');
   const hint = document.getElementById('calc-hint');
-  const priceEl = document.getElementById('calc-price');
+  const summaryEl = document.getElementById('calc-summary');
   const form = document.getElementById('calc-form');
   const NS = 'http://www.w3.org/2000/svg';
-  const fmt = (n) => Math.round(n).toLocaleString('ru-RU');
+  const SIDE_DEPTH = 0.8; // глубина боковой стороны балкона на схеме, м
 
   const TYPES = {
     single:  { name: 'Одностворчатое окно', w: [500, 1000, 700],   h: [600, 1600, 1200], sashes: ['tilt'] },
@@ -59,53 +59,39 @@
     input.style.setProperty('--fill', p + '%');
   };
 
-  /* ---------- расчёт ---------- */
   function doorWidth() {
     return Math.round(Math.min(900, Math.max(700, state.w * 0.38)) / 10) * 10;
   }
 
-  function windowPrice() {
-    const p = P.window;
-    const t = TYPES[state.type];
-    let area = (state.w * state.h) / 1e6;
-    if (t.door) {
-      const dw = doorWidth();
-      area = (dw * state.h + (state.w - dw) * (state.h - 750)) / 1e6;
+  const len = () => state.len.toFixed(1).replace('.', ',');
+
+  /* ---------- описание запроса ---------- */
+  function describe() {
+    if (state.mode === 'window') {
+      const t = TYPES[state.type];
+      const details = [
+        state.sashes.map((k) => SASH_NAMES[k]).join(' + '),
+        state.glass === 2 ? 'двухкамерный стеклопакет' : 'однокамерный стеклопакет',
+        ...[...state.wextras].map((k) => EXTRA_NAMES[k]),
+      ];
+      return { title: `${t.name}, ${state.w} × ${state.h} мм`, details };
     }
-    let sum = area * p.m2[state.glass];
-    state.sashes.forEach((s) => { sum += p.sash[s]; });
-    if (t.door) sum += p.door;
-    const m = state.w / 1000;
-    if (state.wextras.has('sill')) sum += m * p.sill;
-    if (state.wextras.has('ebb')) sum += m * p.ebb;
-    if (state.wextras.has('slopes')) sum += p.slopes;
-    if (state.wextras.has('net')) sum += state.sashes.filter((s) => s !== 'fixed').length * p.net;
-    return Math.round(sum / 100) * 100;
+    const details = [
+      state.glazing === 'warm' ? 'тёплое остекление, ПВХ' : 'холодное остекление, алюминий',
+      ...[...state.bextras].map((k) => EXTRA_NAMES[k]),
+    ];
+    return { title: `Балкон ${SHAPE_NAMES[state.shape]}, ${len()} м по фасаду`, details };
   }
 
-  function balconyPrice() {
-    const p = P.balcony;
-    const sides = { straight: 0, corner: 1, u: 2 }[state.shape];
-    const run = state.len + sides * p.sideDepth;
-    let sum = run * p.perMeter[state.glazing];
-    if (state.bextras.has('insulation')) sum += run * p.insulation;
-    if (state.bextras.has('finish')) sum += run * p.finish;
-    if (state.bextras.has('roof')) sum += state.len * p.roof;
-    return Math.round(sum / 100) * 100;
-  }
-
-  const priceObj = { v: 0 };
-  function updatePrice() {
-    const target = state.mode === 'window' ? windowPrice() : balconyPrice();
-    if (window.gsap && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.to(priceObj, {
-        v: target, duration: 0.7, ease: 'power3.out', overwrite: true,
-        onUpdate: () => { priceEl.textContent = fmt(priceObj.v); },
-      });
-    } else {
-      priceObj.v = target;
-      priceEl.textContent = fmt(target);
-    }
+  function updateSummary() {
+    const d = describe();
+    summaryEl.innerHTML = '';
+    const b = document.createElement('b');
+    b.textContent = d.title;
+    const span = document.createElement('span');
+    const text = d.details.join(', ');
+    span.textContent = text.charAt(0).toUpperCase() + text.slice(1);
+    summaryEl.append(b, span);
   }
 
   /* ---------- схема окна ---------- */
@@ -236,7 +222,7 @@
     renderSashButtons();
     const btn = sashBox.children[i];
     if (btn && document.activeElement && document.activeElement.classList.contains('sash-btn')) btn.focus();
-    updatePrice();
+    updateSummary();
   }
 
   /* ---------- схема балкона ---------- */
@@ -244,7 +230,7 @@
     svg.innerHTML = '';
     const VW = 640, VH = 520;
     const sides = { straight: 0, corner: 1, u: 2 }[state.shape];
-    const glazH = 1.5, parH = 1.0, depth = P.balcony.sideDepth;
+    const glazH = 1.5, parH = 1.0, depth = SIDE_DEPTH;
     const k = 0.55; // глубина в косоугольной проекции
     const projW = state.len + (sides ? depth * k : 0) * (sides === 2 ? 2 : 1);
     const s = Math.min(500 / projW, 360 / (glazH + parH + depth * k * 0.6));
@@ -293,9 +279,9 @@
     el('rect', { x: x0, y: y0 + GH, width: L, height: PH, class: 's-wall' }, g);
     el('line', { x1: x0, y1: y0 + GH, x2: x0 + L, y2: y0 + GH, stroke: '#1d1d1f', 'stroke-width': 1.6 }, g);
 
-    drawDim(g, x0, y0 + GH + PH + 22, x0 + L, y0 + GH + PH + 22, `${state.len.toFixed(1).replace('.', ',')} м`, false);
+    drawDim(g, x0, y0 + GH + PH + 22, x0 + L, y0 + GH + PH + 22, `${len()} м`, false);
 
-    svg.setAttribute('aria-label', `Балкон ${SHAPE_NAMES[state.shape]}, ${state.len.toFixed(1).replace('.', ',')} м по фасаду, ${state.glazing === 'warm' ? 'тёплое' : 'холодное'} остекление`);
+    svg.setAttribute('aria-label', `Балкон ${SHAPE_NAMES[state.shape]}, ${len()} м по фасаду, ${state.glazing === 'warm' ? 'тёплое' : 'холодное'} остекление`);
   }
 
   /* ---------- общий рендер ---------- */
@@ -308,7 +294,7 @@
     if (withTransition && window.gsap && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       gsap.fromTo(svg, { opacity: 0, scale: 0.96, transformOrigin: '50% 50%' }, { opacity: 1, scale: 1, duration: 0.7, ease: 'expo.out' });
     }
-    updatePrice();
+    updateSummary();
   }
 
   /* ---------- управление ---------- */
@@ -362,12 +348,11 @@
 
   wInput.addEventListener('input', () => { state.w = +wInput.value; wOut.textContent = `${state.w} мм`; setFill(wInput); render(false); });
   hInput.addEventListener('input', () => { state.h = +hInput.value; hOut.textContent = `${state.h} мм`; setFill(hInput); render(false); });
-  lInput.addEventListener('input', () => { state.len = +lInput.value; lOut.textContent = `${state.len.toFixed(1).replace('.', ',')} м`; setFill(lInput); render(false); });
+  lInput.addEventListener('input', () => { state.len = +lInput.value; lOut.textContent = `${len()} м`; setFill(lInput); render(false); });
 
   /* ---------- отправка ---------- */
-  function summary() {
-    const price = state.mode === 'window' ? windowPrice() : balconyPrice();
-    const lines = ['Здравствуйте. Посчитал на сайте:'];
+  function requestText() {
+    const lines = ['Здравствуйте. Посчитайте, пожалуйста, стоимость:'];
     if (state.mode === 'window') {
       const t = TYPES[state.type];
       lines.push(`${t.name}, ${state.w} × ${state.h} мм`);
@@ -375,24 +360,24 @@
       lines.push(`Стеклопакет: ${state.glass === 2 ? 'двухкамерный' : 'однокамерный'}`);
       if (state.wextras.size) lines.push(`Дополнительно: ${[...state.wextras].map((k) => EXTRA_NAMES[k]).join(', ')}`);
     } else {
-      lines.push(`Балкон ${SHAPE_NAMES[state.shape]}, ${state.len.toFixed(1).replace('.', ',')} м по фасаду`);
+      lines.push(`Балкон ${SHAPE_NAMES[state.shape]}, ${len()} м по фасаду`);
       lines.push(`Остекление: ${state.glazing === 'warm' ? 'тёплое, ПВХ' : 'холодное, алюминий'}`);
       if (state.bextras.size) lines.push(`Дополнительно: ${[...state.bextras].map((k) => EXTRA_NAMES[k]).join(', ')}`);
     }
-    lines.push(`Ориентировочно: ${fmt(price)} ₽`);
-    lines.push('Хочу записаться на бесплатный замер.');
-    return { text: lines.join('\n'), price };
+    lines.push('Интересует и бесплатный замер.');
+    return lines.join('\n');
   }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const s = summary();
-    if (window.sendLead) window.sendLead({ source: 'calculator', calc: s.text, text: s.text }, form);
+    const text = requestText();
+    const channel = e.submitter && e.submitter.dataset.channel;
+    if (window.sendLead) {
+      window.sendLead({ source: 'calculator', calc: text, text, subject: 'Расчёт стоимости с сайта' }, form, channel);
+    }
   });
 
   /* ---------- старт ---------- */
   [wInput, hInput, lInput].forEach(setFill);
-  priceObj.v = windowPrice();
-  priceEl.textContent = fmt(priceObj.v);
   render(false);
 })();
