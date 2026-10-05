@@ -21,9 +21,9 @@
   };
 
   window.sendLead = (data, formEl, channel) => {
-    if (channel === 'email') { openMail(data.subject || 'Заявка с сайта', data.text); return; }
+    if (channel === 'email' && !cfg.formEndpoint) { openMail(data.subject || 'Заявка с сайта', data.text); return; }
     if (!cfg.formEndpoint) { openWhatsApp(data.text); return; }
-    const btn = formEl && formEl.querySelector('[data-channel="whatsapp"]');
+    const btn = formEl && formEl.querySelector('[type="submit"]:not([hidden])');
     if (btn) { btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = 'Отправляем…'; }
     fetch(cfg.formEndpoint, {
       method: 'POST',
@@ -38,14 +38,15 @@
       })
       .catch(() => {
         // обработчик недоступен: не теряем заявку, открываем WhatsApp
-        openWhatsApp(data.text);
+        if (channel === 'email') openMail(data.subject || 'Заявка с сайта', data.text);
+        else openWhatsApp(data.text);
         if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.label; }
       });
   };
 
   if (cfg.formEndpoint) {
-    qa('.calc__note, .form__note, [data-channel="email"]').forEach((n) => { n.hidden = true; });
-    qa('#lead-form [data-channel="whatsapp"]').forEach((b) => { b.textContent = 'Записаться на замер'; });
+    qa('.calc__note, .form__note, #calc-form [data-channel="email"]').forEach((n) => { n.hidden = true; });
+    qa('#lead-form [data-channel="email"]').forEach((b) => { b.textContent = 'Записаться на замер'; });
     qa('#calc-form [data-channel="whatsapp"]').forEach((b) => { b.textContent = 'Отправить запрос'; });
   }
 

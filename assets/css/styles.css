@@ -702,6 +702,7 @@ legend { padding: 0; }
 textarea.input { resize: vertical; min-height: 96px; }
 .field__error { color: #d70015; font-size: 14px; }
 .form__actions { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+.form__actions--single { grid-template-columns: 1fr; }
 .form__note { font-size: 13px; color: var(--ink-2); text-align: center; margin-top: -8px; }
 .form__done {
   display: flex; gap: 12px; align-items: flex-start;
