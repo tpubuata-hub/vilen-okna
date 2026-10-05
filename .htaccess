@@ -1,0 +1,35 @@
+# Настройки сервера для хостинга Beget (Apache)
+AddDefaultCharset UTF-8
+DirectoryIndex index.html
+
+AddType font/woff2 .woff2
+AddType image/webp .webp
+
+RewriteEngine On
+
+# www.vilen-okna.ru -> vilen-okna.ru
+RewriteCond %{HTTP_HOST} ^www\.vilen-okna\.ru$ [NC]
+RewriteRule ^ http://vilen-okna.ru%{REQUEST_URI} [R=301,L]
+
+# Включить ПОСЛЕ выпуска SSL-сертификата: все заходят по https
+# (убрать решётки в трёх строках ниже и заменить http:// на https:// в правиле выше)
+# RewriteCond %{HTTPS} off
+# RewriteCond %{HTTP:X-Forwarded-Proto} !https
+# RewriteRule ^ https://vilen-okna.ru%{REQUEST_URI} [R=301,L]
+
+# Сжатие текста
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/xml application/javascript text/javascript image/svg+xml
+</IfModule>
+
+# Кеш в браузере. У стилей и скриптов в ссылках есть ?v=, поэтому их можно кешировать надолго
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+</IfModule>
