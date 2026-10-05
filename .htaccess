@@ -9,15 +9,15 @@ AddType image/x-icon .ico
 
 RewriteEngine On
 
-# www.vilen-okna.ru -> vilen-okna.ru
+# www.vilen-okna.ru -> https://vilen-okna.ru
 RewriteCond %{HTTP_HOST} ^www\.vilen-okna\.ru$ [NC]
-RewriteRule ^ http://vilen-okna.ru%{REQUEST_URI} [R=301,L]
+RewriteRule ^ https://vilen-okna.ru%{REQUEST_URI} [R=301,L]
 
-# Включить ПОСЛЕ выпуска SSL-сертификата: все заходят по https
-# (убрать решётки в трёх строках ниже и заменить http:// на https:// в правиле выше)
-# RewriteCond %{HTTPS} off
-# RewriteCond %{HTTP:X-Forwarded-Proto} !https
-# RewriteRule ^ https://vilen-okna.ru%{REQUEST_URI} [R=301,L]
+# Все заходят по защищённому соединению. Сертификат на Бегете выпускается и продлевается сам.
+# Защищённое соединение принимает nginx Бегета, поэтому проверяем и его заголовок.
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://vilen-okna.ru%{REQUEST_URI} [R=301,L]
 
 # Сжатие текста
 <IfModule mod_deflate.c>
